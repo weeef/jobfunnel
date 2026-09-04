@@ -198,20 +198,78 @@
     funnelCountInterview.innerText = f.interview;
     funnelCountOffer.innerText = f.offer;
 
-    // Relative bar widths compared to total applied
-    const base = f.applied || 1;
-    const screenWidth = Math.max(12, Math.round((f.screening / base) * 100));
-    const interviewWidth = Math.max(12, Math.round((f.interview / base) * 100));
-    const offerWidth = Math.max(12, Math.round((f.offer / base) * 100));
+    const totalApplied = f.applied || 0;
+    const screenPercent = totalApplied > 0 ? Math.round((f.screening / totalApplied) * 100) : 0;
+    const interviewPercent = totalApplied > 0 ? Math.round((f.interview / totalApplied) * 100) : 0;
+    const offerPercent = totalApplied > 0 ? Math.round((f.offer / totalApplied) * 100) : 0;
 
-    funnelBarApplied.style.width = '100%';
-    funnelBarScreening.style.width = `${screenWidth}%`;
-    funnelBarInterview.style.width = `${interviewWidth}%`;
-    funnelBarOffer.style.width = `${offerWidth}%`;
+    // Stage 1: Applied
+    const barTextApplied = document.getElementById('barTextApplied');
+    const emptyTextApplied = document.getElementById('emptyTextApplied');
+    if (totalApplied > 0) {
+      funnelBarApplied.style.width = '100%';
+      funnelBarApplied.classList.remove('is-empty');
+      if (barTextApplied) barTextApplied.innerText = '100% of pipeline';
+      if (emptyTextApplied) emptyTextApplied.style.display = 'none';
+    } else {
+      funnelBarApplied.style.width = '0%';
+      funnelBarApplied.classList.add('is-empty');
+      if (emptyTextApplied) {
+        emptyTextApplied.innerText = '0%';
+        emptyTextApplied.style.display = 'block';
+      }
+    }
 
-    barTextScreening.innerText = `${screenWidth}% reach`;
-    barTextInterview.innerText = `${interviewWidth}% reach`;
-    barTextOffer.innerText = `${offerWidth}% reach`;
+    // Stage 2: Screening
+    const emptyTextScreening = document.getElementById('emptyTextScreening');
+    if (f.screening > 0) {
+      funnelBarScreening.style.width = `${Math.max(18, screenPercent)}%`;
+      funnelBarScreening.classList.remove('is-empty');
+      barTextScreening.innerText = `${screenPercent}% reach`;
+      if (emptyTextScreening) emptyTextScreening.style.display = 'none';
+    } else {
+      funnelBarScreening.style.width = '0%';
+      funnelBarScreening.classList.add('is-empty');
+      barTextScreening.innerText = '0%';
+      if (emptyTextScreening) {
+        emptyTextScreening.innerText = '0%';
+        emptyTextScreening.style.display = 'block';
+      }
+    }
+
+    // Stage 3: Tech & Rounds
+    const emptyTextInterview = document.getElementById('emptyTextInterview');
+    if (f.interview > 0) {
+      funnelBarInterview.style.width = `${Math.max(18, interviewPercent)}%`;
+      funnelBarInterview.classList.remove('is-empty');
+      barTextInterview.innerText = `${interviewPercent}% reach`;
+      if (emptyTextInterview) emptyTextInterview.style.display = 'none';
+    } else {
+      funnelBarInterview.style.width = '0%';
+      funnelBarInterview.classList.add('is-empty');
+      barTextInterview.innerText = '0%';
+      if (emptyTextInterview) {
+        emptyTextInterview.innerText = '0%';
+        emptyTextInterview.style.display = 'block';
+      }
+    }
+
+    // Stage 4: Offers
+    const emptyTextOffer = document.getElementById('emptyTextOffer');
+    if (f.offer > 0) {
+      funnelBarOffer.style.width = `${Math.max(18, offerPercent)}%`;
+      funnelBarOffer.classList.remove('is-empty');
+      barTextOffer.innerText = `${offerPercent}% reach`;
+      if (emptyTextOffer) emptyTextOffer.style.display = 'none';
+    } else {
+      funnelBarOffer.style.width = '0%';
+      funnelBarOffer.classList.add('is-empty');
+      barTextOffer.innerText = '0%';
+      if (emptyTextOffer) {
+        emptyTextOffer.innerText = '0%';
+        emptyTextOffer.style.display = 'block';
+      }
+    }
 
     rateAppliedToScreen.innerText = `${f.rates.appliedToScreen}%`;
     rateScreenToInterview.innerText = `${f.rates.screenToInterview}%`;
