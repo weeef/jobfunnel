@@ -340,8 +340,45 @@
   function renderKanban() {
     kanbanBoard.innerHTML = '';
 
+    const stats = CareerStorage.calculateFunnel(allJobs);
+    const totalApplied = allJobs.filter(j => j.status !== 'wishlist').length;
+
     STAGES.forEach(stage => {
       const stageJobs = filteredJobs.filter(j => j.status === stage.key);
+
+      // Derive stage conversion / reach metrics for integrated funnel view
+      let stageDesc = '';
+      let stageRate = '';
+      let stageWidth = 0;
+
+      if (stage.key === 'wishlist') {
+        stageDesc = 'Saved queue';
+        stageRate = `${stageJobs.length} saved`;
+        stageWidth = allJobs.length > 0 ? Math.min(100, Math.round((stageJobs.length / allJobs.length) * 100)) : 0;
+      } else if (stage.key === 'applied') {
+        stageDesc = totalApplied > 0 ? 'Pipeline entry' : 'Awaiting apps';
+        stageRate = totalApplied > 0 ? '100% reach' : '0%';
+        stageWidth = totalApplied > 0 ? 100 : 0;
+      } else if (stage.key === 'screening') {
+        stageDesc = 'Screen conversion';
+        stageRate = `${stats.funnel.rates.appliedToScreen}%`;
+        stageWidth = stats.funnel.rates.appliedToScreen;
+      } else if (stage.key === 'technical') {
+        const reachedTech = allJobs.filter(j => ['technical', 'interview', 'offer'].includes(j.status)).length;
+        const techRate = totalApplied > 0 ? Math.round((reachedTech / totalApplied) * 100) : 0;
+        stageDesc = 'Tech reach';
+        stageRate = `${techRate}%`;
+        stageWidth = techRate;
+      } else if (stage.key === 'interview') {
+        const interviewReachRate = totalApplied > 0 ? Math.round((stats.funnel.interview / totalApplied) * 100) : 0;
+        stageDesc = 'Final round reach';
+        stageRate = `${interviewReachRate}%`;
+        stageWidth = interviewReachRate;
+      } else if (stage.key === 'offer') {
+        stageDesc = 'Offer conversion';
+        stageRate = `${stats.funnel.rates.overall}% won`;
+        stageWidth = stats.funnel.rates.overall;
+      }
 
       const col = document.createElement('div');
       col.className = 'cf-kanban-column';
@@ -355,6 +392,15 @@
           </div>
           <span class="cf-col-badge">${stageJobs.length}</span>
         </div>
+        <div class="cf-col-funnel-meta">
+          <div class="cf-col-funnel-row">
+            <span class="cf-col-funnel-desc">${stageDesc}</span>
+            <span class="cf-col-funnel-rate" style="color: ${stage.color}">${stageRate}</span>
+          </div>
+          <div class="cf-col-mini-track">
+            <div class="cf-col-mini-bar" style="width: ${stageWidth}%; background: ${stage.color}"></div>
+          </div>
+        </div>
         <div class="cf-col-cards" data-stage="${stage.key}">
           <!-- Cards injected here -->
         </div>
@@ -363,17 +409,17 @@
       const cardsContainer = col.querySelector('.cf-col-cards');
 
       const EMPTY_MESSAGES = {
-        wishlist: "The 'maybe once I hype myself up' pile ☕",
-        applied: "Sent into the resume black hole. Godspeed 🚀",
-        screening: "Recruiter screening vibes incoming 📞",
-        technical: "LeetCode medium prayers go here 💻",
-        interview: "Final rounds! Stay hydrated & impress the VP ✨",
-        offer: "Manifesting that sweet offer letter 🏆"
+        wishlist: "Saved roles you want to apply to. Click '+ Add Application' to save one.",
+        applied: "Applications you've submitted. Drag cards right as you hear back!",
+        screening: "Recruiter phone screens or introductory chats.",
+        technical: "Coding assessments, technical interviews, or take-homes.",
+        interview: "Final team interviews or hiring manager rounds.",
+        offer: "Offers received! Review compensation details and negotiate."
       };
 
       if (stageJobs.length === 0) {
         cardsContainer.innerHTML = `
-          <div style="padding: 28px 12px; text-align: center; color: var(--text-muted); font-size: 12px; font-style: italic; line-height: 1.4;">
+          <div style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 12px; line-height: 1.4;">
             ${EMPTY_MESSAGES[stage.key] || 'No applications'}
           </div>
         `;

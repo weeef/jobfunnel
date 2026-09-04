@@ -33,13 +33,14 @@ A close friend of mine was deep in the job search grind, switching between their
     - **Applied** (100% of pipeline)
     - **Recruiter Screen** (% conversion & reach)
     - **Tech & Onsite Rounds** (% conversion)
-    - **Offers Secured** 🏆 (With real canvas confetti celebration!)
-  - **The Character Development Arc (Rejections Branch) 💅**: Tracks filtered applications and drop-offs at every stage so you can pinpoint where your pipeline leaks.
+    - **Offers Secured** 🏆 (With celebratory confetti animation!)
+  - **Closed Applications Branch 📁**: Keeps track of archived, withdrawn, or rejected applications along with your feedback notes so you can learn from every opportunity.
 
-- 📋 **Drag & Drop Kanban Board**:
-  - Smooth card movement between `Wishlist` ➔ `Applied` ➔ `Screening` ➔ `Technical` ➔ `Final Rounds` ➔ `Offer`.
+- 📋 **Integrated Funnel & Drag-and-Drop Board**:
+  - Direct integration between the funnel visualizer and Kanban columns: each stage header displays its live conversion rate, progress bar, and active count.
+  - Smooth card movement between `Saved` ➔ `Applied` ➔ `Screening` ➔ `Technical` ➔ `Final Rounds` ➔ `Offer`.
   - Cards show company badges, salary pills, days since applied, and interview date reminders.
-  - Relatable empty state jokes to keep your spirits high during the grind.
+  - Clear, beginner-friendly instructions for non-technical users.
 
 - 🗂️ **Sidebar Companion (`chrome.sidePanel`)**:
   - Keep your pipeline visible on the side while actively browsing job portals.
@@ -47,7 +48,7 @@ A close friend of mine was deep in the job search grind, switching between their
 - 📦 **Your Data Stays Yours**:
   - 1-click **Export to CSV** (for Excel/Sheets) and **Export to JSON**.
   - 1-click **Backup Import** & **Clear All / Reset**.
-  - Built-in **Demo Data** generator to test-drive the funnel before sending out your first application.
+  - Built-in **Load Sample Jobs** button to test-drive the board before logging your first job.
 
 ---
 

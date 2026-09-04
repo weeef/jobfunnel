@@ -48,11 +48,11 @@
         <option value="other">Direct / Other</option>
       </select>
 
-      <button class="cf-btn cf-btn-secondary" id="btnDemoData" title="Load sample applications to test the funnel">
+      <button class="cf-btn cf-btn-secondary" id="btnDemoData" title="Load sample applications to test the board">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
         </svg>
-        Demo Data
+        Load Sample Jobs
       </button>
 
       <button class="cf-btn cf-btn-secondary cf-btn-danger-outline" id="btnDirectClearAll" title="Clear all saved applications">
@@ -268,11 +268,11 @@
             </div>
           </div>
 
-          <!-- Rejections Branch Path -->
+          <!-- Closed Applications Branch -->
           <div class="cf-rejections-branch" id="rejectionsBranch">
             <div class="cf-branch-indicator">
-              <span class="cf-branch-icon">💅</span>
-              <span>Character Development Arc (Their loss):</span>
+              <span class="cf-branch-icon">📁</span>
+              <span>Closed Applications:</span>
               <strong id="branchRejectionsCount">0</strong>
             </div>
             <div class="cf-branch-pills" id="rejectionPills">
@@ -288,18 +288,27 @@
       <div class="cf-section-header">
         <div class="cf-title-with-badge">
           <h2>Application Pipeline Board</h2>
-          <span class="cf-badge cf-badge-subtle">Drag & Drop cards across stages</span>
+          <span class="cf-badge cf-badge-subtle">Integrated Funnel Flow</span>
         </div>
         <div class="cf-board-legend">
-          <span class="cf-legend-item"><span class="cf-dot cf-dot-wishlist"></span>Wishlist</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-wishlist"></span>Saved</span>
           <span class="cf-legend-item"><span class="cf-dot cf-dot-applied"></span>Applied</span>
           <span class="cf-legend-item"><span class="cf-dot cf-dot-screening"></span>Screening</span>
           <span class="cf-legend-item"><span class="cf-dot cf-dot-technical"></span>Technical</span>
           <span class="cf-legend-item"><span class="cf-dot cf-dot-interview"></span>Final Rounds</span>
           <span class="cf-legend-item"><span class="cf-dot cf-dot-offer"></span>Offer</span>
-          <span class="cf-legend-item"><span class="cf-dot cf-dot-rejected"></span>Rejected</span>
         </div>
       </div>
+
+      <div class="cf-board-hint">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span><strong>How it works:</strong> Drag cards from left to right as you advance through interview stages. Each column shows your live funnel conversion rate!</span>
+      </div>
+
 
       <div class="cf-kanban-board" id="kanbanBoard">
         <!-- Columns rendered dynamically via JS -->

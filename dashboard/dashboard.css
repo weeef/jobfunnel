@@ -798,6 +798,64 @@ body.cf-app {
 .cf-dot-offer { background: var(--stage-offer); }
 .cf-dot-rejected { background: var(--stage-rejected); }
 
+.cf-board-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #c7d2fe;
+  margin-bottom: 16px;
+}
+
+.cf-board-hint svg {
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.cf-col-funnel-meta {
+  padding: 0 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cf-col-funnel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.cf-col-funnel-desc {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.cf-col-funnel-rate {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  color: #38bdf8;
+}
+
+.cf-col-mini-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cf-col-mini-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
 .cf-kanban-board {
   display: grid;
   grid-template-columns: repeat(6, minmax(240px, 1fr));
@@ -805,6 +863,7 @@ body.cf-app {
   overflow-x: auto;
   padding-bottom: 12px;
 }
+
 
 .cf-kanban-column {
   background: rgba(15, 23, 42, 0.5);
