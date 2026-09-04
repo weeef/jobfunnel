@@ -13,8 +13,6 @@ A close friend of mine was deep in the job search grind, switching between their
 - A sad Google Sheet that hadn't been updated in three weeks.
 - Zero clue which stage each application was in, or where the drop-offs were happening.
 
-They asked: *"Can you please just build me something that automatically tracks what I apply to, syncs between my laptop and PC without me having to log in to another SaaS app, and gives me a visual funnel so I know if my resume is actually converting?"*
-
 **JobFunnel was born.**
 
 ---
