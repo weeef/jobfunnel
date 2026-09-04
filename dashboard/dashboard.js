@@ -91,6 +91,7 @@
     setupEventListeners();
     await loadJobs();
     await updateSyncIndicator();
+    await checkUpdateBanner();
 
     // Check if opened with query parameters (e.g. from context menu, side panel, or shortcuts)
     const params = new URLSearchParams(window.location.search);
@@ -132,6 +133,31 @@
     const badgeText = document.getElementById('syncStatusText');
     if (badgeText) {
       badgeText.innerText = `Chrome Sync (${usage.percentUsed}% storage)`;
+    }
+  }
+
+  /**
+   * Display GitHub update banner if a new release/commit exists
+   */
+  async function checkUpdateBanner() {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        const data = await chrome.storage.local.get('cf_update_info');
+        const info = data.cf_update_info;
+        if (info?.available) {
+          const banner = document.getElementById('updateBanner');
+          const text = document.getElementById('updateBannerText');
+          if (banner && text) {
+            text.innerText = `JobFunnel v${info.latestVersion} is available on GitHub! (You have v${info.currentVersion})`;
+            banner.style.display = 'flex';
+            document.getElementById('btnCloseUpdateBanner')?.addEventListener('click', () => {
+              banner.style.display = 'none';
+            });
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
     }
   }
 

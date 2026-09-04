@@ -26,7 +26,6 @@
     // 1. LinkedIn
     if (hostname.includes('linkedin.com')) {
       source = 'linkedin';
-      // Unified top card or standard job view
       const titleEl = document.querySelector(
         '.job-details-jobs-unified-top-card__job-title, .jobs-unified-top-card__job-title, h1.topcard__title, .jobs-details__main-content h1, h1'
       );
@@ -34,17 +33,17 @@
         '.job-details-jobs-unified-top-card__company-name, .jobs-unified-top-card__company-name, .topcard__org-name-link, .jobs-unified-top-card__primary-description a'
       );
       const locationEl = document.querySelector(
-        '.job-details-jobs-unified-top-card__bullet, .jobs-unified-top-card__bullet, .topcard__flavor--bullet'
+        '.job-details-jobs-unified-top-card__bullet, .jobs-unified-top-card__bullet, .topcard__flavor--bullet, .jobs-unified-top-card__workplace-type'
       );
       const salaryEl = document.querySelector(
-        '.job-details-jobs-unified-top-card__job-insight:has(span[dir="ltr"]), .jobs-unified-top-card__job-insight'
+        '.job-details-jobs-unified-top-card__job-insight:has(span[dir="ltr"]), .jobs-unified-top-card__job-insight, [data-job-id] .job-details-preference-and-insight'
       );
 
       if (titleEl) title = titleEl.innerText.trim();
       if (companyEl) company = companyEl.innerText.trim();
       if (locationEl) location = locationEl.innerText.trim();
-      if (salaryEl && salaryEl.innerText.includes('$')) {
-        salary = salaryEl.innerText.trim();
+      if (salaryEl && (salaryEl.innerText.includes('$') || salaryEl.innerText.toLowerCase().includes('usd'))) {
+        salary = cleanSalaryText(salaryEl.innerText);
       }
     }
     // 2. Indeed
@@ -57,38 +56,41 @@
         '[data-testid="inlineHeader-companyName"], .jobsearch-InlineCompanyRating-companyHeader, [data-testid="jobsearch-CompanyInfoContainer"] a'
       );
       const locationEl = document.querySelector(
-        '[data-testid="job-location"], .jobsearch-JobInfoHeader-companyLocation'
+        '[data-testid="job-location"], .jobsearch-JobInfoHeader-companyLocation, [data-testid="inlineHeader-companyLocation"]'
       );
       const salaryEl = document.querySelector(
-        '#salaryInfoAndJobType, [data-testid="attribute_snippet_testid"]'
+        '#salaryInfoAndJobType, [data-testid="attribute_snippet_testid"], .jobsearch-JobMetadataHeader-item'
       );
 
       if (titleEl) title = titleEl.innerText.trim();
       if (companyEl) company = companyEl.innerText.trim();
       if (locationEl) location = locationEl.innerText.trim();
-      if (salaryEl) salary = salaryEl.innerText.trim();
+      if (salaryEl) salary = cleanSalaryText(salaryEl.innerText);
     }
     // 3. Greenhouse
     else if (hostname.includes('greenhouse.io')) {
       source = 'greenhouse';
       const titleEl = document.querySelector('.app-title, #header h1, h1');
       const companyEl = document.querySelector('.company-name, #header .company-name');
+      const locationEl = document.querySelector('.location, .company-location, #header .location');
       if (titleEl) title = titleEl.innerText.trim();
       if (companyEl) company = companyEl.innerText.replace(/^at\s+/i, '').trim();
+      if (locationEl) location = locationEl.innerText.trim();
     }
     // 4. Lever
     else if (hostname.includes('lever.co')) {
       source = 'lever';
       const titleEl = document.querySelector('.posting-headline h2, h2');
       const companyEl = document.querySelector('.main-header-logo img, .main-header-logo');
-      const locationEl = document.querySelector('.posting-categories .location');
+      const locationEl = document.querySelector('.posting-categories .location, .sort-by-time .location, .workplaceTypes');
+      const salaryEl = document.querySelector('.salary-range, .compensation');
       if (titleEl) title = titleEl.innerText.trim();
       if (companyEl) {
         company = companyEl.getAttribute('alt') || companyEl.innerText.trim();
       }
       if (locationEl) location = locationEl.innerText.trim();
+      if (salaryEl) salary = cleanSalaryText(salaryEl.innerText);
       if (!company) {
-        // Lever URL format: jobs.lever.co/<company>/<id>
         const parts = window.location.pathname.split('/');
         if (parts[1]) company = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
       }
@@ -97,8 +99,11 @@
     else if (hostname.includes('myworkdayjobs.com')) {
       source = 'workday';
       const titleEl = document.querySelector('[data-automation-id="jobPostingHeader"], h2');
+      const locationEl = document.querySelector('[data-automation-id="locations"], [data-automation-id="jobPostingLocation"]');
+      const salaryEl = document.querySelector('[data-automation-id="compensation"], [data-automation-id="jobPostingPayRange"]');
       if (titleEl) title = titleEl.innerText.trim();
-      // Extract company from subdomain (e.g. nvidia.wd5.myworkdayjobs.com)
+      if (locationEl) location = locationEl.innerText.trim();
+      if (salaryEl) salary = cleanSalaryText(salaryEl.innerText);
       const sub = hostname.split('.')[0];
       company = sub.charAt(0).toUpperCase() + sub.slice(1);
     }
@@ -106,32 +111,53 @@
     else if (hostname.includes('ashbyhq.com')) {
       source = 'ashby';
       const titleEl = document.querySelector('h1');
+      const locationEl = document.querySelector('div[class*="location"], [data-testid="location"]');
+      const salaryEl = document.querySelector('div[class*="compensation"], [data-testid="compensation"]');
       if (titleEl) title = titleEl.innerText.trim();
+      if (locationEl) location = locationEl.innerText.trim();
+      if (salaryEl) salary = cleanSalaryText(salaryEl.innerText);
       const parts = window.location.pathname.split('/');
       if (parts[1]) company = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
     }
-    // 7. Schema.org JSON-LD fallback (used across modern career sites)
-    if (!title || !company) {
-      try {
-        const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
-        for (const script of jsonLdScripts) {
-          const json = JSON.parse(script.innerText);
-          const data = Array.isArray(json) ? json.find(item => item['@type'] === 'JobPosting') : json;
-          if (data && data['@type'] === 'JobPosting') {
-            if (!title && data.title) title = data.title;
-            if (!company && data.hiringOrganization?.name) company = data.hiringOrganization.name;
-            if (!location && data.jobLocation?.address?.addressLocality) {
-              location = data.jobLocation.address.addressLocality;
+    // 7. Schema.org JSON-LD (Standardized across thousands of company career portals)
+    try {
+      const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
+      for (const script of jsonLdScripts) {
+        const json = JSON.parse(script.innerText);
+        const data = Array.isArray(json) ? json.find(item => item['@type'] === 'JobPosting') : json;
+        if (data && data['@type'] === 'JobPosting') {
+          if (!title && data.title) title = data.title;
+          if (!company && data.hiringOrganization?.name) company = data.hiringOrganization.name;
+          if (!location) {
+            if (data.jobLocationType === 'TELECOMMUTE') {
+              location = 'Remote';
+            } else if (data.jobLocation?.address?.addressLocality) {
+              const addr = data.jobLocation.address;
+              location = `${addr.addressLocality}${addr.addressRegion ? ', ' + addr.addressRegion : ''}`;
             }
-            break;
           }
+          if (!salary && data.baseSalary) {
+            const bs = data.baseSalary;
+            if (typeof bs === 'string') {
+              salary = cleanSalaryText(bs);
+            } else if (bs.value) {
+              const val = bs.value;
+              const currency = bs.currency || '$';
+              if (val.minValue && val.maxValue) {
+                salary = `${currency}${val.minValue.toLocaleString()} - ${currency}${val.maxValue.toLocaleString()}${val.unitText ? ' / ' + val.unitText.toLowerCase() : ''}`;
+              } else if (val.value) {
+                salary = `${currency}${val.value.toLocaleString()}${val.unitText ? ' / ' + val.unitText.toLowerCase() : ''}`;
+              }
+            }
+          }
+          break;
         }
-      } catch (e) {
-        // ignore parse error
       }
+    } catch (e) {
+      // ignore parse error
     }
 
-    // 8. Meta tag fallback
+    // 8. Meta tags fallback
     if (!title) {
       const ogTitle = document.querySelector('meta[property="og:title"]');
       if (ogTitle && ogTitle.content) title = ogTitle.content.split('|')[0].split('-')[0].trim();
@@ -141,12 +167,14 @@
       if (ogSiteName && ogSiteName.content) company = ogSiteName.content.trim();
     }
 
-    // Regex check for salary in body if not found
+    // 9. Intelligent Deep Salary Scraper across body text if still missing
     if (!salary) {
-      const salaryMatch = document.body.innerText.match(/\$\s*([0-9]{2,3}(?:,[0-9]{3})*|\d+k)\s*(?:-|to)\s*\$\s*([0-9]{2,3}(?:,[0-9]{3})*|\d+k)(?:\s*(?:\/|\s*per\s*)(?:yr|year|hour|hr|annual))?/i);
-      if (salaryMatch) {
-        salary = salaryMatch[0].trim();
-      }
+      salary = extractSalaryFromBody();
+    }
+
+    // 10. Intelligent Location Scraper fallback
+    if (!location) {
+      location = extractLocationFromBody();
     }
 
     return {
@@ -158,6 +186,61 @@
       source: source
     };
   }
+
+  /**
+   * Helper: Clean and format salary strings
+   */
+  function cleanSalaryText(str) {
+    if (!str) return '';
+    const match = str.match(/(?:\$|USD\s*)\s*([0-9]{2,3}(?:,[0-9]{3})*|\d{2,3}k|\d{2,3}(?:\.\d{2})?)\s*(?:-|–|—|to)\s*(?:\$|USD\s*)?\s*([0-9]{2,3}(?:,[0-9]{3})*|\d{2,3}k|\d{2,3}(?:\.\d{2})?)\s*(?:\/|\s*per\s*)?(?:yr|year|hour|hr|annual|annually)?/i);
+    if (match) return match[0].trim();
+    const singleMatch = str.match(/(?:\$|USD\s*)\s*([0-9]{2,3}(?:,[0-9]{3})*|\d{2,3}k)\s*(?:\/|\s*per\s*)?(?:yr|year|annual|annually|hour|hr)?/i);
+    if (singleMatch) return singleMatch[0].trim();
+    return str.split('\n')[0].trim().slice(0, 40);
+  }
+
+  /**
+   * Helper: Scrape salary range from page body using refined regex
+   */
+  function extractSalaryFromBody() {
+    const text = document.body.innerText;
+    // Look for range e.g. $140,000 - $180,000 or $140k - $180k
+    const rangeMatch = text.match(/(?:\$|USD\s*)\s*([0-9]{2,3}(?:,[0-9]{3})*|\d{2,3}k)\s*(?:-|–|—|to)\s*(?:\$|USD\s*)?\s*([0-9]{2,3}(?:,[0-9]{3})*|\d{2,3}k)(?:\s*(?:\/|\s*per\s*)(?:yr|year|hour|hr|annual|annually))?/i);
+    if (rangeMatch) return rangeMatch[0].trim();
+
+    // Look for hourly e.g. $50.00 - $75.00/hr
+    const hourlyMatch = text.match(/\$\s*([0-9]{2}(?:\.[0-9]{2})?)\s*(?:-|to)\s*\$\s*([0-9]{2}(?:\.[0-9]{2})?)\s*(?:\/|\s*per\s*)?(?:hr|hour)/i);
+    if (hourlyMatch) return hourlyMatch[0].trim();
+
+    return '';
+  }
+
+  /**
+   * Helper: Detect workplace location from text keywords
+   */
+  function extractLocationFromBody() {
+    const text = document.body.innerText;
+    if (/\b(?:fully\s+)?remote\s*(?:\(us\)|\(usa\)|\(global\)|\(americas\))?/i.test(text)) {
+      return 'Remote';
+    }
+    if (/\bhybrid\b/i.test(text)) {
+      return 'Hybrid';
+    }
+    return '';
+  }
+
+  /**
+   * Message listener so Popup and Background Worker can request on-demand scraped job data
+   */
+  if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.action === 'scrapeJob') {
+        const data = scrapeJobData();
+        sendResponse({ job: data });
+      }
+      return true;
+  }
+
 
   /**
    * Check if the current job is already saved in storage

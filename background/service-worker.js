@@ -20,7 +20,59 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
   // Update badge counter
   await updateBadge();
+
+  // Schedule GitHub update checker
+  chrome.alarms.create('cf_check_update', { periodInMinutes: 240 });
+  await checkForGitHubUpdates();
 });
+
+// Alarm listener for recurring checks
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'cf_check_update') {
+    await checkForGitHubUpdates();
+  }
+});
+
+// Check if a newer version exists in the GitHub repository
+async function checkForGitHubUpdates() {
+  try {
+    const currentVersion = chrome.runtime.getManifest().version;
+    const res = await fetch('https://raw.githubusercontent.com/weeef/jobfunnel/main/manifest.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const remoteManifest = await res.json();
+    if (remoteManifest?.version && isNewerVersion(remoteManifest.version, currentVersion)) {
+      console.log(`[CareerFunnel] New update found on GitHub: ${remoteManifest.version} (current: ${currentVersion})`);
+      await chrome.storage.local.set({
+        cf_update_info: {
+          available: true,
+          latestVersion: remoteManifest.version,
+          currentVersion: currentVersion,
+          repoUrl: 'https://github.com/weeef/jobfunnel'
+        }
+      });
+      // Set badge indicator
+      await chrome.action.setBadgeText({ text: 'NEW' });
+      await chrome.action.setBadgeBackgroundColor({ color: '#10b981' });
+    } else {
+      await chrome.storage.local.remove('cf_update_info');
+    }
+  } catch (err) {
+    // Network offline or GitHub rate limit, fail silently
+  }
+}
+
+function isNewerVersion(remote, current) {
+  const r = remote.split('.').map(Number);
+  const c = current.split('.').map(Number);
+  for (let i = 0; i < Math.max(r.length, c.length); i++) {
+    const rv = r[i] || 0;
+    const cv = c[i] || 0;
+    if (rv > cv) return true;
+    if (rv < cv) return false;
+  }
+  return false;
+}
+
 
 // Update extension icon badge with count of active interviews / applications
 async function updateBadge() {

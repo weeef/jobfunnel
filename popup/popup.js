@@ -24,14 +24,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Error loading popup stats:', err);
   }
 
-  // Get current active tab
+  let detectedJob = null;
+
+  // Get current active tab and ask content script for scraped job data
   if (chrome?.tabs) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     activeTab = tab;
-    if (tab?.title) {
-      tabTitle.innerText = tab.title;
+
+    if (tab?.id && tab.url && !tab.url.startsWith('chrome://')) {
+      tabTitle.innerText = tab.title || 'Job Page';
+
+      try {
+        // Send message to content script to get detailed scraped data
+        const response = await chrome.tabs.sendMessage(tab.id, { action: 'scrapeJob' });
+        if (response?.job) {
+          detectedJob = response.job;
+          if (detectedJob.company && detectedJob.title) {
+            tabTitle.innerText = `${detectedJob.company} — ${detectedJob.title}`;
+          }
+
+          const tabDetails = document.getElementById('tabDetails');
+          if (tabDetails) {
+            const meta = [];
+            if (detectedJob.location) meta.push(`📍 ${detectedJob.location}`);
+            if (detectedJob.salary) meta.push(`💰 ${detectedJob.salary}`);
+            if (meta.length > 0) {
+              tabDetails.innerText = meta.join('  •  ');
+              tabDetails.style.display = 'block';
+            }
+          }
+        }
+      } catch (e) {
+        // Content script might not be injected on this page yet, fallback to title parsing
+      }
     } else {
       tabTitle.innerText = 'No active webpage';
+      btnTrackCurrentTab.disabled = true;
     }
   }
 
@@ -61,26 +89,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnTrackCurrentTab.innerText = 'Tracking...';
 
     try {
-      // Parse clean company & role from title
-      let company = 'Company';
-      let title = activeTab.title || 'Job Opportunity';
+      let company = detectedJob?.company;
+      let title = detectedJob?.title;
+      let location = detectedJob?.location || '';
+      let salary = detectedJob?.salary || '';
+      let source = detectedJob?.source || 'other';
 
-      if (title.includes(' at ')) {
-        const parts = title.split(' at ');
-        title = parts[0].trim();
-        company = parts[1].split('|')[0].split('-')[0].trim();
-      } else if (title.includes(' - ')) {
-        const parts = title.split(' - ');
-        title = parts[0].trim();
-        company = parts[1].split('|')[0].trim();
+      // Fallback parsing from page title if content script wasn't active
+      if (!company || !title) {
+        const rawTitle = activeTab.title || 'Job Opportunity';
+        if (rawTitle.includes(' at ')) {
+          const parts = rawTitle.split(' at ');
+          title = parts[0].trim();
+          company = parts[1].split('|')[0].split('-')[0].trim();
+        } else if (rawTitle.includes(' - ')) {
+          const parts = rawTitle.split(' - ');
+          title = parts[0].trim();
+          company = parts[1].split('|')[0].trim();
+        } else {
+          company = 'Company';
+          title = rawTitle;
+        }
       }
 
       await CareerStorage.saveJob({
         company,
         title,
+        location,
+        salary,
         status: 'applied',
         url: activeTab.url,
-        source: 'other'
+        source
       });
 
       btnTrackCurrentTab.innerText = '✓ Tracked!';
@@ -90,11 +129,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       setTimeout(() => {
         window.close();
-      }, 1000);
+      }, 900);
     } catch (err) {
       alert('Error tracking job: ' + err.message);
       btnTrackCurrentTab.disabled = false;
       btnTrackCurrentTab.innerText = 'Track this Job';
     }
   });
+
 });
