@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerFunnel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="cf-popup-card">
+    <div class="cf-popup-header">
+      <div class="cf-brand">
+        <div class="cf-logo-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+        </div>
+        <div class="cf-brand-titles">
+          <h2>Career<span>Funnel</span></h2>
+          <span class="cf-sync-text">⚡ Synced with Chrome Profile</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="cf-quick-stats">
+      <div class="cf-stat-box">
+        <span class="cf-stat-num" id="popStatApplied">0</span>
+        <span class="cf-stat-tag">Applied</span>
+      </div>
+      <div class="cf-stat-box">
+        <span class="cf-stat-num" id="popStatInterviews" style="color: #fcd34d;">0</span>
+        <span class="cf-stat-tag">Interviews</span>
+      </div>
+      <div class="cf-stat-box">
+        <span class="cf-stat-num" id="popStatOffers" style="color: #34d399;">0</span>
+        <span class="cf-stat-tag">Offers</span>
+      </div>
+    </div>
+
+    <!-- Current Tab Tracker -->
+    <div class="cf-tab-track-section" id="tabTrackSection">
+      <div class="cf-section-label">Current Page</div>
+      <div class="cf-detected-box">
+        <div class="cf-detected-title" id="tabTitle">Checking active tab...</div>
+        <button class="cf-btn-track-tab" id="btnTrackCurrentTab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Track this Job
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="cf-action-buttons">
+      <button class="cf-btn-primary" id="btnOpenDashboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        Open Funnel Dashboard
+      </button>
+
+      <button class="cf-btn-secondary" id="btnOpenSidePanel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+        Open Side Panel
+      </button>
+    </div>
+  </div>
+
+  <script src="../shared/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

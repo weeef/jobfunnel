@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerFunnel — Job Tracker & Funnel Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="cf-app">
+  <!-- Top Navigation Bar -->
+  <header class="cf-topbar">
+    <div class="cf-brand">
+      <div class="cf-logo-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+      </div>
+      <div class="cf-brand-text">
+        <h1>Career<span>Funnel</span></h1>
+        <span class="cf-sync-badge" id="syncStatusBadge">
+          <span class="cf-sync-dot"></span>
+          <span id="syncStatusText">Chrome Sync Active</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="cf-top-actions">
+      <!-- Search & Filters -->
+      <div class="cf-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search company, role, location...">
+      </div>
+
+      <select id="filterSource" class="cf-select-filter">
+        <option value="all">All Sources</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="indeed">Indeed</option>
+        <option value="greenhouse">Greenhouse</option>
+        <option value="lever">Lever</option>
+        <option value="ashby">Ashby</option>
+        <option value="workday">Workday</option>
+        <option value="other">Direct / Other</option>
+      </select>
+
+      <button class="cf-btn cf-btn-secondary" id="btnDemoData" title="Load sample applications to test the funnel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+        </svg>
+        Demo Data
+      </button>
+
+      <button class="cf-btn cf-btn-secondary cf-btn-danger-outline" id="btnDirectClearAll" title="Clear all saved applications">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Clear All
+      </button>
+
+      <div class="cf-dropdown-wrap">
+        <button class="cf-btn cf-btn-secondary" id="btnDataMenu">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export / Backup
+        </button>
+        <div class="cf-dropdown-menu" id="dataDropdown">
+          <button class="cf-dropdown-item" id="btnExportJSON">Export to JSON</button>
+          <button class="cf-dropdown-item" id="btnExportCSV">Export to CSV</button>
+          <div class="cf-dropdown-divider"></div>
+          <button class="cf-dropdown-item" id="btnImportJSON">Import Backup JSON</button>
+          <input type="file" id="fileImportJSON" accept=".json" style="display: none;">
+          <div class="cf-dropdown-divider"></div>
+          <button class="cf-dropdown-item cf-item-danger" id="btnClearAll">Clear All Applications</button>
+        </div>
+      </div>
+
+      <button class="cf-btn cf-btn-primary" id="btnOpenAddModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Application
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="cf-container">
+    <!-- Quick Analytics Stats Row -->
+    <section class="cf-stats-grid">
+      <div class="cf-stat-card">
+        <div class="cf-stat-header">
+          <span class="cf-stat-label">Total Tracked</span>
+          <span class="cf-stat-icon cf-icon-indigo">💼</span>
+        </div>
+        <div class="cf-stat-value" id="statTotalJobs">0</div>
+        <div class="cf-stat-sub">Across all pipeline stages</div>
+      </div>
+
+      <div class="cf-stat-card">
+        <div class="cf-stat-header">
+          <span class="cf-stat-label">Active Pipelines</span>
+          <span class="cf-stat-icon cf-icon-cyan">⚡</span>
+        </div>
+        <div class="cf-stat-value" id="statActiveJobs">0</div>
+        <div class="cf-stat-sub">In review or interview rounds</div>
+      </div>
+
+      <div class="cf-stat-card">
+        <div class="cf-stat-header">
+          <span class="cf-stat-label">Interview Rate</span>
+          <span class="cf-stat-icon cf-icon-purple">🎯</span>
+        </div>
+        <div class="cf-stat-value" id="statInterviewRate">0%</div>
+        <div class="cf-stat-sub">Applications reaching interviews</div>
+      </div>
+
+      <div class="cf-stat-card highlight">
+        <div class="cf-stat-header">
+          <span class="cf-stat-label">Job Offers</span>
+          <span class="cf-stat-icon cf-icon-emerald">🏆</span>
+        </div>
+        <div class="cf-stat-value" id="statTotalOffers">0</div>
+        <div class="cf-stat-sub" id="statOfferConversionRate">0% conversion from applied</div>
+      </div>
+    </section>
+
+    <!-- Visual Recruitment Funnel Section -->
+    <section class="cf-funnel-section">
+      <div class="cf-section-header">
+        <div class="cf-title-with-badge">
+          <h2>Application Funnel & Path Conversion</h2>
+          <span class="cf-badge cf-badge-info">Interactive Pipeline Flow</span>
+        </div>
+        <div class="cf-funnel-toggle">
+          <button class="cf-pill-btn active" id="btnFilterFunnelAll">Show All</button>
+          <button class="cf-pill-btn" id="btnFilterActiveOnly">Active Only</button>
+        </div>
+      </div>
+
+      <!-- Funnel Flow Diagram Container -->
+      <div class="cf-funnel-diagram-card">
+        <div class="cf-funnel-wrapper">
+          <!-- Funnel Stages Flow -->
+          <div class="cf-funnel-stages">
+            <!-- Stage 1: Applied -->
+            <div class="cf-funnel-step" data-stage="applied">
+              <div class="cf-funnel-step-head">
+                <span class="cf-step-num">1</span>
+                <span class="cf-step-name">Applied</span>
+                <span class="cf-step-count" id="funnelCountApplied">0</span>
+              </div>
+              <div class="cf-funnel-bar-container">
+                <div class="cf-funnel-bar bar-applied" id="funnelBarApplied" style="width: 100%;">
+                  <span class="cf-funnel-bar-text">100% of pipeline</span>
+                </div>
+              </div>
+              <div class="cf-funnel-dropoff">
+                <span class="cf-dropoff-label">Drop-off / No response:</span>
+                <span class="cf-dropoff-val" id="dropoffApplied">0</span>
+              </div>
+            </div>
+
+            <!-- Conversion Connector 1 -->
+            <div class="cf-funnel-connector">
+              <div class="cf-conversion-pill" id="convPillAppliedToScreen">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span id="rateAppliedToScreen">0%</span>
+              </div>
+            </div>
+
+            <!-- Stage 2: Screening -->
+            <div class="cf-funnel-step" data-stage="screening">
+              <div class="cf-funnel-step-head">
+                <span class="cf-step-num">2</span>
+                <span class="cf-step-name">Recruiter Screen</span>
+                <span class="cf-step-count" id="funnelCountScreening">0</span>
+              </div>
+              <div class="cf-funnel-bar-container">
+                <div class="cf-funnel-bar bar-screening" id="funnelBarScreening" style="width: 70%;">
+                  <span class="cf-funnel-bar-text" id="barTextScreening">0%</span>
+                </div>
+              </div>
+              <div class="cf-funnel-dropoff">
+                <span class="cf-dropoff-label">Filtered out:</span>
+                <span class="cf-dropoff-val" id="dropoffScreening">0</span>
+              </div>
+            </div>
+
+            <!-- Conversion Connector 2 -->
+            <div class="cf-funnel-connector">
+              <div class="cf-conversion-pill" id="convPillScreenToInterview">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span id="rateScreenToInterview">0%</span>
+              </div>
+            </div>
+
+            <!-- Stage 3: Technical & Onsite -->
+            <div class="cf-funnel-step" data-stage="technical">
+              <div class="cf-funnel-step-head">
+                <span class="cf-step-num">3</span>
+                <span class="cf-step-name">Tech & Rounds</span>
+                <span class="cf-step-count" id="funnelCountInterview">0</span>
+              </div>
+              <div class="cf-funnel-bar-container">
+                <div class="cf-funnel-bar bar-interview" id="funnelBarInterview" style="width: 40%;">
+                  <span class="cf-funnel-bar-text" id="barTextInterview">0%</span>
+                </div>
+              </div>
+              <div class="cf-funnel-dropoff">
+                <span class="cf-dropoff-label">Post-tech drop:</span>
+                <span class="cf-dropoff-val" id="dropoffInterview">0</span>
+              </div>
+            </div>
+
+            <!-- Conversion Connector 3 -->
+            <div class="cf-funnel-connector">
+              <div class="cf-conversion-pill" id="convPillInterviewToOffer">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span id="rateInterviewToOffer">0%</span>
+              </div>
+            </div>
+
+            <!-- Stage 4: Offers -->
+            <div class="cf-funnel-step target-step" data-stage="offer">
+              <div class="cf-funnel-step-head">
+                <span class="cf-step-num">4</span>
+                <span class="cf-step-name">Offers Secured! 🏆</span>
+                <span class="cf-step-count" id="funnelCountOffer">0</span>
+              </div>
+              <div class="cf-funnel-bar-container">
+                <div class="cf-funnel-bar bar-offer" id="funnelBarOffer" style="width: 20%;">
+                  <span class="cf-funnel-bar-text" id="barTextOffer">0%</span>
+                </div>
+              </div>
+              <div class="cf-funnel-dropoff">
+                <span class="cf-dropoff-label">Negotiating / Accepted 🎉</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rejections Branch Path -->
+          <div class="cf-rejections-branch" id="rejectionsBranch">
+            <div class="cf-branch-indicator">
+              <span class="cf-branch-icon">💅</span>
+              <span>Character Development Arc (Their loss):</span>
+              <strong id="branchRejectionsCount">0</strong>
+            </div>
+            <div class="cf-branch-pills" id="rejectionPills">
+              <!-- Dynamically populated tags -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pipeline View Mode: Kanban Pipeline Board -->
+    <section class="cf-board-section">
+      <div class="cf-section-header">
+        <div class="cf-title-with-badge">
+          <h2>Application Pipeline Board</h2>
+          <span class="cf-badge cf-badge-subtle">Drag & Drop cards across stages</span>
+        </div>
+        <div class="cf-board-legend">
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-wishlist"></span>Wishlist</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-applied"></span>Applied</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-screening"></span>Screening</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-technical"></span>Technical</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-interview"></span>Final Rounds</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-offer"></span>Offer</span>
+          <span class="cf-legend-item"><span class="cf-dot cf-dot-rejected"></span>Rejected</span>
+        </div>
+      </div>
+
+      <div class="cf-kanban-board" id="kanbanBoard">
+        <!-- Columns rendered dynamically via JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / Edit Job Modal -->
+  <div class="cf-modal-overlay" id="jobModal">
+    <div class="cf-modal-dialog">
+      <div class="cf-modal-header">
+        <h3 id="modalTitle">Track New Job Application</h3>
+        <button class="cf-modal-close" id="btnCloseModal">✕</button>
+      </div>
+      <form id="jobForm" class="cf-modal-form">
+        <input type="hidden" id="jobFormId">
+
+        <div class="cf-form-row">
+          <div class="cf-form-group">
+            <label for="formCompany">Company Name *</label>
+            <input type="text" id="formCompany" required placeholder="e.g. Stripe, Google, Figma">
+          </div>
+          <div class="cf-form-group">
+            <label for="formTitle">Role / Job Title *</label>
+            <input type="text" id="formTitle" required placeholder="e.g. Senior Frontend Engineer">
+          </div>
+        </div>
+
+        <div class="cf-form-row">
+          <div class="cf-form-group">
+            <label for="formStatus">Funnel Stage</label>
+            <select id="formStatus">
+              <option value="wishlist">Wishlist / Bookmarked</option>
+              <option value="applied" selected>Applied</option>
+              <option value="screening">Screening / Recruiter Call</option>
+              <option value="technical">Technical Assessment</option>
+              <option value="interview">Final Interview / Onsite</option>
+              <option value="offer">Offer Received 🎉</option>
+              <option value="rejected">Rejected / Ghosted</option>
+              <option value="withdrawn">Withdrawn</option>
+            </select>
+          </div>
+          <div class="cf-form-group">
+            <label for="formAppliedDate">Applied Date</label>
+            <input type="date" id="formAppliedDate">
+          </div>
+        </div>
+
+        <div class="cf-form-row">
+          <div class="cf-form-group">
+            <label for="formLocation">Location</label>
+            <input type="text" id="formLocation" placeholder="e.g. Remote, San Francisco, CA">
+          </div>
+          <div class="cf-form-group">
+            <label for="formSalary">Salary / Compensation Range</label>
+            <input type="text" id="formSalary" placeholder="e.g. $160,000 - $190,000">
+          </div>
+        </div>
+
+        <div class="cf-form-row">
+          <div class="cf-form-group">
+            <label for="formSource">Platform / Source</label>
+            <select id="formSource">
+              <option value="linkedin">LinkedIn</option>
+              <option value="indeed">Indeed</option>
+              <option value="greenhouse">Greenhouse</option>
+              <option value="lever">Lever</option>
+              <option value="ashby">Ashby</option>
+              <option value="workday">Workday</option>
+              <option value="other">Company Site / Other</option>
+            </select>
+          </div>
+          <div class="cf-form-group">
+            <label for="formUrl">Posting URL</label>
+            <input type="url" id="formUrl" placeholder="https://...">
+          </div>
+        </div>
+
+        <!-- Dynamic Interview Rounds Section -->
+        <div class="cf-form-section">
+          <div class="cf-section-title-row">
+            <h4>Interview Rounds</h4>
+            <button type="button" class="cf-btn-text" id="btnAddInterviewRound">+ Add Round</button>
+          </div>
+          <div id="interviewRoundsList" class="cf-rounds-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Offer Details Section (Shown when status is offer) -->
+        <div class="cf-form-section" id="offerSection" style="display: none;">
+          <h4>Offer Compensation Details</h4>
+          <div class="cf-form-row">
+            <div class="cf-form-group">
+              <label for="formOfferBase">Base Salary</label>
+              <input type="text" id="formOfferBase" placeholder="e.g. $185,000">
+            </div>
+            <div class="cf-form-group">
+              <label for="formOfferBonus">Bonus / Equity</label>
+              <input type="text" id="formOfferBonus" placeholder="e.g. 15% bonus + $120k RSUs">
+            </div>
+            <div class="cf-form-group">
+              <label for="formOfferDeadline">Decision Deadline</label>
+              <input type="date" id="formOfferDeadline">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="cf-form-group">
+          <label for="formNotes">Notes & Preparation</label>
+          <textarea id="formNotes" rows="3" placeholder="Recruiter contacts, referrals, specific question notes, technical stack..."></textarea>
+        </div>
+
+        <div class="cf-modal-actions">
+          <button type="button" class="cf-btn cf-btn-secondary" id="btnCancelModal">Cancel</button>
+          <button type="submit" class="cf-btn cf-btn-primary" id="btnSaveJob">Save to Pipeline</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Toast / Dialog -->
+  <div class="cf-confirm-dialog" id="confirmDialog">
+    <div class="cf-confirm-card">
+      <p id="confirmMessage">Are you sure you want to delete this job?</p>
+      <div class="cf-confirm-actions">
+        <button class="cf-btn cf-btn-secondary" id="btnConfirmCancel">Cancel</button>
+        <button class="cf-btn cf-btn-danger" id="btnConfirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/storage.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

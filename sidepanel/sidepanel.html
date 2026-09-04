@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerFunnel Side Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="cf-side-container">
+    <!-- Header -->
+    <header class="cf-side-header">
+      <div class="cf-side-brand">
+        <div class="cf-logo-icon">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+        </div>
+        <h3>Career<span>Funnel</span></h3>
+      </div>
+      <button class="cf-btn-expand" id="btnExpandDashboard" title="Open Full Screen Dashboard">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mini Funnel Flow Bar -->
+    <div class="cf-side-funnel-bar">
+      <div class="cf-mini-step" data-filter="applied">
+        <span class="cf-mini-count" id="countApplied">0</span>
+        <span class="cf-mini-label">Applied</span>
+      </div>
+      <div class="cf-mini-arrow">→</div>
+      <div class="cf-mini-step" data-filter="screening">
+        <span class="cf-mini-count" id="countScreening">0</span>
+        <span class="cf-mini-label">Screen</span>
+      </div>
+      <div class="cf-mini-arrow">→</div>
+      <div class="cf-mini-step" data-filter="interview">
+        <span class="cf-mini-count" id="countInterview">0</span>
+        <span class="cf-mini-label">Interview</span>
+      </div>
+      <div class="cf-mini-arrow">→</div>
+      <div class="cf-mini-step offer" data-filter="offer">
+        <span class="cf-mini-count" id="countOffer">0</span>
+        <span class="cf-mini-label">Offer 🎉</span>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="cf-side-search">
+      <input type="text" id="sideSearchInput" placeholder="Filter company, role...">
+      <button class="cf-side-add-btn" id="btnSideAdd" title="Track New Application">+</button>
+    </div>
+
+    <!-- Applications List -->
+    <div class="cf-side-list" id="sideJobsList">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="cf-side-footer">
+      <span>⚡ Synced with Chrome Profile</span>
+    </footer>
+  </div>
+
+  <script src="../shared/storage.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
